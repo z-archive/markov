@@ -1,0 +1,118 @@
+#!/bin/bash
+
+set -eu
+
+function print_usage ()
+{
+    exit_code=$1
+    name=$(basename $0)
+    echo "Usage:
+    $name configure <extra cmake options>
+    $name make <extra make options>
+    $name test
+
+  configure - prepare source code for build
+  make - build source code
+  test - run unit-tests
+"
+    exit ${exit_code}
+}
+
+# path to checkout
+path_root=$(readlink -f $(dirname $0))
+
+# path to build directory
+path_stage=${path_root}/stage
+
+# path to source code
+path_source=${path_root}/src
+
+function exec_path ()
+{
+    kind=$1
+    name=$2
+    case $kind in
+	"binary")
+	    echo ${path_stage}/$name/$name
+	    ;;
+	"link")
+	    echo ${path_root}/$name
+	    ;;
+	*)
+	    echo "internal error" 1>&2
+	    exit 1
+	    ;;
+    esac
+}
+
+binary_names="learn generate"
+
+# remove links from checkout
+function remove_links ()
+{
+    local name
+    for name in ${binary_names}; do
+	rm -f $(exec_path link $name)
+    done
+}
+
+# create links from stage to checkout
+function create_links ()
+{
+    local name
+    for name in ${binary_names}; do
+	if [ -f $(exec_path binary $name) ]; then
+	    echo "bin=$(exec_path binary $name)"
+	    echo "link=$(exec_path link $name)"
+	    ln $(exec_path binary $name) $(exec_path link $name)
+	fi
+    done
+}
+
+function clean ()
+{
+    rm -rf ${path_stage}
+    remove_links
+}
+
+if [ $# -lt 1 ]; then
+    print_usage 0
+fi
+
+action=${1}
+shift
+
+case $action in
+    "configure")
+	# clean everything
+	clean
+
+	# generate makefiles
+	mkdir ${path_stage}
+	pushd ${path_stage}
+	    cmake ${path_source} $@
+	popd
+	;;
+    "make")
+	remove_links
+
+	pushd ${path_stage}
+	    make $@
+	popd
+
+	create_links
+	;;
+    "test")
+	echo "[TODO] TEST"
+	;;
+    "clean")
+	clean
+	;;
+    "-h"|"--help")
+	print_usage 0
+	;;
+    *)
+	echo "Unknow action $1" 1>&2
+	print_usage 1
+	;;
+esac
