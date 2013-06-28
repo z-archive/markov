@@ -62,8 +62,6 @@ function create_links ()
     local name
     for name in ${binary_names}; do
 	if [ -f $(exec_path binary $name) ]; then
-	    echo "bin=$(exec_path binary $name)"
-	    echo "link=$(exec_path link $name)"
 	    ln $(exec_path binary $name) $(exec_path link $name)
 	fi
     done
