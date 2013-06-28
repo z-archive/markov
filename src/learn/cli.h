@@ -8,8 +8,6 @@
 
 int parse(int argc,
 	  char* argv[],
-	  std::ostream& stdout,
-	  std::ostream& stderr,
 	  optional_string& in,
 	  optional_string& out,
 	  bool& verbose,

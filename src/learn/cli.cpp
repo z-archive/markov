@@ -9,8 +9,6 @@ using boost::format;
 
 int parse(int argc,
 	  char* argv[],
-	  std::ostream& stdout,
-	  std::ostream& stderr,
 	  optional_string& in,
 	  optional_string& out,
 	  bool& verbose,
@@ -43,7 +41,7 @@ int parse(int argc,
   po::notify(vm);
 
   if (vm.count("help")) {
-    desc.print(stdout);
+    desc.print(std::cout);
     return 1;
   }
   
@@ -56,8 +54,8 @@ int parse(int argc,
   }
 
   if (!vm.count("chain_order")) {
-    stderr << "argument --chain_order=<integer>|-c <integer> must be specified" << std::endl;
-    return 1;
+    auto message = "argument --chain_order=<integer>|-c <integer> must be specified";
+    throw std::runtime_error(message);
   }
 
   if ((order_var < 1) || 
