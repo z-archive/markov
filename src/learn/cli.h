@@ -8,11 +8,12 @@
 
 int parse(int argc,
 	  char* argv[],
-	  optional_string& in,
-	  optional_string& out,
+	  OptionalString& in,
+	  Timeout& timeout,
+	  OptionalString& out,
+	  ChainOrder& order,
 	  bool& verbose,
-	  bool& strict,
-	  chain_order_t& order);
+	  bool& strict);
 	   
 
 #endif /* __MARKOV_LEARN_CLI_H__ */

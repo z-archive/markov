@@ -9,24 +9,30 @@ using boost::format;
 
 int parse(int argc,
 	  char* argv[],
-	  optional_string& in,
-	  optional_string& out,
+	  OptionalString& in,
+	  Timeout& timeout,
+	  OptionalString& out,
+	  ChainOrder& order,
 	  bool& verbose,
-	  bool& strict,
-	  chain_order_t& order)
+	  bool& strict)
 {
-  auto usage = boost::format("Usage: %1% OPTIONS") % argv[0];
+  auto usage = "learn OPTIONS";
   auto co_help = format("markov's chain order - integer from 1 to %1%");
 
-  po::options_description desc(usage.str());
+  po::options_description desc(usage);
   auto add = desc.add_options();
+
   std::string input_var;
+  std::string output_var;
+  int order_var;
+  int timeout_var;
+
   add("input,i", po::value<std::string>(&input_var),
       "path to file with links for learning; stdin if omit");
-  std::string output_var;
+  add("timeout,t", po::value<int>(&timeout_var)->default_value(default_timeout),
+      "timeout for curl for every url");
   add("output,o", po::value<std::string>(&output_var),
       "file path for store model after learning; stdout if omit");
-  int order_var;
   add("chain_order,c", po::value<int>(&order_var),
       (co_help % static_cast<int>(max_chain_order)).str().c_str());
   add("strict,s",
@@ -49,6 +55,8 @@ int parse(int argc,
     in = input_var;
   }
 
+  timeout = static_cast<Timeout>(timeout_var);
+
   if (vm.count("output")) {
     out = output_var;
   }
@@ -66,6 +74,7 @@ int parse(int argc,
   } else {
     order = order_var;
   }
+
 
   strict = static_cast<bool>(vm.count("strict"));
   verbose = static_cast<bool>(vm.count("verbose"));

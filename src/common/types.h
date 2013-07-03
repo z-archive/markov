@@ -3,9 +3,21 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 #include <boost/optional.hpp>
 
-typedef uint8_t chain_order_t;
-typedef boost::optional<std::string> optional_string;
+typedef boost::optional<std::string> OptionalString;
+
+typedef uint16_t ChainOrder;
+typedef uint32_t BufferSize;
+
+typedef std::string Url;
+typedef uint16_t    Timeout;
+
+typedef std::string Word;
+typedef std::vector<Word> Sentence;
+
+typedef uint32_t    Token;
+typedef uint32_t    Frequency;
 
 #endif /* __MARKOV_COMMON_TYPES_H__ */
