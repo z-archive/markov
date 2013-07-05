@@ -13,6 +13,8 @@ using namespace boost;
 process::child p_launch(Url const& url, Timeout const& timeout, bool verbose)
 {
   ArgumentList al;
+  // push as single argument with space, because otherwise curl will not interprets
+  // %1% as argument for --connect-timeout
   al.push_back((format("--connect-timeout %1%") % timeout).str());
   // do not show progress bar
   al.push_back("-s");
@@ -22,11 +24,11 @@ process::child p_launch(Url const& url, Timeout const& timeout, bool verbose)
   process::context context;
   context.environment = process::self::get_environment();
   context.stdout_behavior = process::capture_stream();
+  // capture stderr
   if (verbose) {
     context.stderr_behavior = process::capture_stream();
     std::cerr << format("starting download %1%...\n") % url << std::flush;
   }
-
   return process::launch(std::string("/usr/bin/curl"), al, context);
 }
 
@@ -43,7 +45,8 @@ Downloader::Downloader(Url const& url, Timeout const& timeout, bool verbose) :
   _verbose(verbose),
   _url(url),
   _work(true),
-  _child(p_launch(url, timeout, verbose))
+  _child(p_launch(url, timeout, verbose)),
+  _stdout(_child.get_stdout())
 {
 }
 
@@ -52,9 +55,14 @@ Downloader::~Downloader()
   join();
 }
 
-std::istream& Downloader::data()
+BufferSize Downloader::read(char *buffer, BufferSize max)
 {
-  return _child.get_stdout();
+  if (_stdout.read(buffer, max)) {
+    return max;
+  }
+  auto actual = _stdout.gcount();
+  _stdout.read(buffer, actual);
+  return actual;
 }
 
 void Downloader::join()
@@ -69,17 +77,13 @@ void Downloader::join()
   if (_verbose) {
     format m; // message
     int code = s.exit_status();
+    std::string stderr = p_stderr(_child);
     if (0 == code) {
       m = format("download of '%1%': succesfully\n") % _url;
     } else {
       m = format("download of '%1%': error, exit code is %2%, stderr is '%3%'\n")
-	% _url % code % p_stderr(_child);
+	% _url % code % stderr;
     }
     std::cerr << m << std::flush;
   }
-}
-
-Url const& Downloader::url() const
-{
-  return _url;
 }

@@ -4,6 +4,7 @@
 
 #include <boost/format.hpp>
 #include <boost/utility/typed_in_place_factory.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 #include "common/types.h"
 #include "cli.h"
@@ -60,19 +61,20 @@ int main(int argc, char* argv[])
     std::ostream& out = resolve_stream(std::cout, fout, pout);
     Url url;
     while(std::getline(in, url)) {
-      std::cout << boost::format("Url is %1%") % url << std::endl;
       Downloader d(url, timeout, verbose);
-      std::cout << "Count result" << std::endl;
-      std::string dummy;
-      int count = 0;
-      std::istream& s = d.data();
-      while(std::getline(s, dummy)) {
-	++count;
+      char buffer[100];
+      BufferSize result;
+      result = d.read(buffer, 99);
+      while(result > 0)
+      {
+	buffer[result] = 0;
+	std::string b = buffer;
+	boost::replace_all(b, "\n", "\\n");
+	std::cout << format("size %2% buffer '%1%'") % b % result << std::endl;
+	result = d.read(buffer, 99);
       }
-      std::cout << format("Total %1% lines\n") % count  << std::flush;
       d.join();
     }
-
     return 0;
   }
   catch (std::exception& e) {

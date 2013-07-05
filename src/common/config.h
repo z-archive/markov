@@ -3,7 +3,8 @@
 
 #include "types.h"
 
-static const ChainOrder max_chain_order = 128;
-static const Timeout default_timeout = 10;
+static ChainOrder const max_chain_order = 128;
+static Timeout const default_timeout = 10;
+static BufferSize const max_word_length = 64;
 
 #endif /* __MARKOV_COMMON_CONFIG_H__ */

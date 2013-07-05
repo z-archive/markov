@@ -1,10 +1,14 @@
-#ifndef __MARKOV_LEARN_DOWNLOAD_H__
-#define __MARKOV_LEARN_DOWNLOAD_H__
+#ifndef __MARKOV_LEARN_DOWNLOADER_H__
+#define __MARKOV_LEARN_DOWNLOADER_H__
 
+#include <iostream>
+
+#include <boost/utility.hpp>
 #include <boost/process.hpp>
 
 #include "common/types.h"
 #include "learn/learn.h"
+
 
 class Downloader : boost::noncopyable
 {
@@ -12,17 +16,16 @@ public:
   Downloader(Url const&, Timeout const&, bool verbose);
   virtual ~Downloader();
 
-  std::istream& data();
-
+  BufferSize read(char *buffer, BufferSize max);
   void join();
 
-  Url const& url() const;
 private:
   bool _verbose;
   Url const _url;
   bool _work;
-  boost::process::child  _child;
+  boost::process::child     _child;
+  boost::process::pistream& _stdout;
 };
 
 
-#endif /* __MARKOV_LEARN_DOWNLOAD_H__ */
+#endif /* __MARKOV_LEARN_DOWNLOADER_H__ */
