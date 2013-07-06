@@ -6,7 +6,6 @@
 #include <boost/utility/typed_in_place_factory.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
-#include "common/types.h"
 #include "cli.h"
 #include "downloader.h"
 
@@ -28,40 +27,32 @@ S& resolve_stream(S& default_stream,
 int main(int argc, char* argv[])
 {
   try {
-    // input path
-    OptionalString pin;
-    Timeout timeout;
-    // output path
-    OptionalString pout;
-    // chain order
-    ChainOrder order;
-    bool verbose;
-    bool strict;
-
-    int result = parse(argc, argv, pin, timeout, pout, order, verbose, strict);
+    settings::Learn s;
+    int result = parse(argc, argv, s);
 
     if (result != 0) {
       return result;
     }
 
-    if (verbose) {
+    if (s.verbose) {
       std::cerr << "Options:\n"
-		<< format("  input from '%1%'\n") % (pin ? pin.get() : "stdin")
-		<< format("  timeout is %1%\n") % timeout
-		<< format("  output to '%1%'\n") % (pout ? pout.get() : "stdout")
-		<< format("  chain order is %1%\n") % static_cast<int>(order)
-		<< format("  verbose? %1%\n") % (verbose ? "yes" : "no")
-		<< format("  strict? %1%\n") % (strict ? "yes" : "no")
+		<< format("  input from '%1%'\n") % (s.in ? s.in.get() : "stdin")
+		<< format("  timeout is %1%\n") % s.timeout
+		<< format("  output to '%1%'\n") % (s.out ? s.out.get() : "stdout")
+		<< format("  chain order is %1%\n") % s.order
+		<< format("  max word length %1%\n") % s.max_word_length
+		<< format("  verbose? %1%\n") % (s.verbose ? "yes" : "no")
+		<< format("  strict? %1%\n") % (s.strict ? "yes" : "no")
 		<< std::flush;
     }
 
     boost::optional<std::ifstream> fin;
     boost::optional<std::ofstream> fout;
-    std::istream& in = resolve_stream(std::cin, fin, pin);
-    std::ostream& out = resolve_stream(std::cout, fout, pout);
+    std::istream& in = resolve_stream(std::cin, fin, s.in);
+    std::ostream& out = resolve_stream(std::cout, fout, s.out);
     Url url;
     while(std::getline(in, url)) {
-      Downloader d(url, timeout, verbose);
+      Downloader d(url, s.timeout, s.verbose);
       char buffer[100];
       BufferSize result;
       result = d.read(buffer, 99);

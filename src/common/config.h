@@ -3,8 +3,34 @@
 
 #include "types.h"
 
-static ChainOrder const max_chain_order = 128;
-static Timeout const default_timeout = 10;
-static BufferSize const max_word_length = 64;
+namespace settings
+{
+
+  struct Common
+  {
+    OptionalString in;
+    OptionalString out;
+    bool           verbose;
+  };
+
+  struct Learn : public Common
+  {
+    Timeout    timeout;
+    ChainOrder order;
+    BufferSize max_word_length;
+    bool       strict;
+  };
+
+namespace defaults
+{
+  static Timeout   const timeout = 10;
+  static BufferSize const max_word_length = 64;
+} // namespace defaults
+
+namespace limits
+{
+  static ChainOrder const order = 64;
+} // namespace defauls
+} // namespace settings
 
 #endif /* __MARKOV_COMMON_CONFIG_H__ */
