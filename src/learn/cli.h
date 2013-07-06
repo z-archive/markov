@@ -7,7 +7,7 @@
 #include "common/config.h"
 
 int parse(int argc,
-	  char* argv[],
-	  settings::Learn& settings);	   
+          char* argv[],
+          settings::Learn& settings);
 
 #endif /* __MARKOV_LEARN_CLI_H__ */
