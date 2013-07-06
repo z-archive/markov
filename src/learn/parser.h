@@ -4,6 +4,7 @@
 #include <boost/utility.hpp>
 
 #include "common/types.h"
+#include "common/config.h"
 
 class Downloader;
 
@@ -46,8 +47,7 @@ private:
 
 public:
     Parser(Downloader& downloader,
-           BufferSize  buffer_length,
-           BufferSize  max_word_length);
+           settings::Learn const& settings);
 
     bool next();
 

@@ -5,6 +5,8 @@
 #include <boost/thread.hpp>
 #include "common/types.h"
 
+class TokenDict;
+
 class WordDict : boost::noncopyable
 {
 private:
@@ -13,13 +15,44 @@ private:
     friend class TokenDict;
 
 public:
+    typedef Token item_type;
+    typedef Token item_return_type;
+
     WordDict();
-    Token convert(Word const&);
+    Token operator()(Word const&);
+
+    template<typename Archive>
+    void serialize(Archive &ar, unsigned int const version)
+    {
+        TokenDict tdict(*this);
+        bool compressed = true;
+        ar & compressed;
+        ar & tdict;
+    }
 
 private:
     Data  _data;
     Token _count;
     mutable boost::mutex _mutex;
+};
+
+class DummyWordDict : boost::noncopyable
+{
+public:
+    typedef Word        item_type;
+    typedef Word const &item_return_type;
+
+    Word const& operator()(Word const &word)
+    {
+        return word;
+    }
+
+    template<typename Archive>
+    void serialize(Archive &ar, unsigned int const /*version*/)
+    {
+        bool compressed = false;
+        ar & compressed;
+    }
 };
 
 class TokenDict : boost::noncopyable
@@ -29,7 +62,13 @@ private:
 
 public:
     TokenDict(WordDict const& dict);
-    Word const& convert(Token);
+    Word const& operator()(Token);
+
+    template<typename Archive>
+    void serialize(Archive &ar, unsigned int const /*version*/)
+    {
+        ar & _data;
+    }
 
 private:
     Data _data;

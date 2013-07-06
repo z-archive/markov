@@ -2,38 +2,43 @@
 #include <boost/assert.hpp>
 #include "state.h"
 
-State::State(ChainOrder order)
+template<typename Item>
+State<Item>::State(ChainOrder order)
 {
     _data.reserve(order);
 }
 
-void State::clear()
+template<typename Item>
+void State<Item>::clear()
 {
     _data.clear();
 }
 
-void State::add(Token token)
+template<typename Item>
+void State<Item>::add(Item item)
 {
     if (_data.size() < _data.capacity())
     {
-        _data.push_back(token);
+        _data.push_back(item);
     }
     else
     {
-        Token* to   = &_data[0];
-        Token* from = to + 1;
-        auto bytes = sizeof(Token) * (_data.size() - 1);
+        Item* to   = &_data[0];
+        Item* from = to + 1;
+        auto bytes = sizeof(Item) * (_data.size() - 1);
         memmove(to, from, bytes);
-        _data.back() = token;
+        _data.back() = item;
     }
 }
 
-bool State::complete() const
+template<typename Item>
+bool State<Item>::complete() const
 {
     return _data.size() == _data.capacity();
 }
 
-bool State::less(State const& right) const
+template<typename Item>
+bool State<Item>::less(State<Item> const& right) const
 {
     BOOST_ASSERT(complete());
     BOOST_ASSERT(right.complete());
@@ -47,3 +52,6 @@ bool State::less(State const& right) const
     }
     return false;
 }
+
+template class State<Token>;
+template class State<Word>;

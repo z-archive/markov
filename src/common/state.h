@@ -5,24 +5,32 @@
 #include <boost/utility.hpp>
 #include "common/types.h"
 
+template<typename Item>
 class State
 {
 private:
-    typedef std::vector<Token> Data;
+    typedef std::vector<Item> Data;
 
 public:
     State(ChainOrder order);
 
     void clear();
-    void add(Token);
+    void add(Item);
     bool complete() const;
     bool less(State const&) const;
+
+    template<typename Archive>
+    void serialize(Archive &ar, unsigned int const version)
+    {
+        ar & _data;
+    }
 
 private:
     Data _data;
 };
 
-inline bool operator<(State const& l, State const& r)
+template<typename Item>
+inline bool operator<(State<Item> const& l, State<Item> const& r)
 {
     return l.less(r);
 }

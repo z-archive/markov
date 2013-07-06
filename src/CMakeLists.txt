@@ -7,7 +7,7 @@ ADD_DEFINITIONS(
 )
 
 # Dependencies
-find_package(Boost REQUIRED program_options system)
+find_package(Boost REQUIRED thread program_options system serialization)
 if(NOT Boost_FOUND)
  message(FATAL_ERROR "Could not find any version of boost")
 endif(NOT Boost_FOUND)

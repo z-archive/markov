@@ -17,6 +17,8 @@ struct Learn : public Common
     Timeout    timeout;
     ChainOrder order;
     BufferSize max_word_length;
+    BufferSize parser_buffer_length;
+    uint32_t   worker_count;
     bool       strict;
 };
 

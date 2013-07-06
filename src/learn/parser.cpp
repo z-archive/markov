@@ -69,10 +69,11 @@ void Parser::Buffer::skip(BufferSize count)
 }
 
 Parser::Parser(Downloader& downloader,
-               BufferSize  buffer_length,
-               BufferSize  max_word_length) :
-    _buffer(downloader, buffer_length, max_word_length*2),
-    _max_word_length(max_word_length),
+               settings::Learn const &settings) :
+    _buffer(downloader,
+            settings.parser_buffer_length,
+            settings.max_word_length*2),
+    _max_word_length(settings.max_word_length),
     _delimeter(true)
 {
 }
@@ -141,7 +142,7 @@ void Parser::skip()
         BOOST_ASSERT(count > 0);
         _buffer.skip(count);
     }
-    while(!_buffer.done() && predicate(head()));
+    while(false == _buffer.done() && predicate(head()));
 }
 
 bool Parser::next()
@@ -155,6 +156,11 @@ bool Parser::next()
     {
         // skip ignored data
         skip<for_ignore>();
+    }
+
+    if(_buffer.done())
+    {
+        return false;
     }
 
     if (is_word(head()))

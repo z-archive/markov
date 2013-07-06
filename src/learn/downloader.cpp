@@ -41,11 +41,11 @@ std::string p_stderr(boost::process::child& process)
     return result;
 }
 
-Downloader::Downloader(Url const& url, Timeout const& timeout, bool verbose) : 
-    _verbose(verbose),
+Downloader::Downloader(Url const& url, settings::Learn const &settings) :
+    _verbose(settings.verbose),
     _url(url),
     _work(true),
-    _child(p_launch(url, timeout, verbose)),
+    _child(p_launch(url, settings.timeout, settings.verbose)),
     _stdout(_child.get_stdout())
 {
 }

@@ -6,7 +6,7 @@ WordDict::WordDict() : _count(0)
     ++_count; // Token_End;
 }
 
-Token WordDict::convert(Word const& word)
+Token WordDict::operator()(Word const& word)
 {
     guard lock(_mutex);
 
@@ -31,7 +31,7 @@ TokenDict::TokenDict(WordDict const& dict) : _data(dict._count)
 }
 
 
-Word const& TokenDict::convert(Token token)
+Word const& TokenDict::operator()(Token token)
 {
     return _data.at(token);
 }

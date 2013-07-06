@@ -1,5 +1,6 @@
 #include <boost/program_options.hpp>
 #include <boost/format.hpp>
+#include <boost/thread.hpp>
 
 #include "cli.h"
 
@@ -22,14 +23,23 @@ int parse(int argc,
     int order_var;
     int timeout_var;
     int mwl_var;
+    int worker_count_var;
 
-    add("input,i", po::value<std::string>(&input_var),
+    add("input,i",
+        po::value<std::string>(&input_var),
         "path to file with links for learning; stdin if omit");
-    add("timeout,t", po::value<int>(&timeout_var)->default_value(defaults::timeout),
+    add("timeout,t",
+        po::value<int>(&timeout_var)->default_value(defaults::timeout),
         "timeout for curl for every url");
-    add("output,o", po::value<std::string>(&output_var),
+    add("output,o",
+        po::value<std::string>(&output_var),
         "file path for store model after learning; stdout if omit");
-    add("max_word_length,w", po::value<int>(&mwl_var)->default_value(defaults::max_word_length));
+    add("max_word_length,m",
+        po::value<int>(&mwl_var)->default_value(defaults::max_word_length),
+        "all words which longer max_word_length would truncated");
+    add("worker_count,w",
+        po::value<int>(&worker_count_var)->default_value(boost::thread::hardware_concurrency()),
+        "downloader and parser thread count");
     add("chain_order,c", po::value<int>(&order_var),
         (co_help % static_cast<int>(limits::order)).str().c_str());
     add("strict,s",
@@ -58,9 +68,9 @@ int parse(int argc,
         settings.out = output_var;
     }
 
-    if(vm.count("max_word_length")) {
-        settings.max_word_length = mwl_var;
-    }
+    settings.max_word_length = mwl_var;
+    settings.parser_buffer_length = settings.max_word_length * 1024;
+    settings.worker_count = worker_count_var;
 
     if (!vm.count("chain_order")) {
         auto message = "argument --chain_order=<integer>|-c <integer> must be specified";
@@ -75,7 +85,6 @@ int parse(int argc,
     } else {
         settings.order = order_var;
     }
-
 
     settings.strict = static_cast<bool>(vm.count("strict"));
     settings.verbose = static_cast<bool>(vm.count("verbose"));

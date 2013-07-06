@@ -7,12 +7,13 @@
 #include <boost/process.hpp>
 
 #include "common/types.h"
+#include "common/config.h"
 
 
 class Downloader : boost::noncopyable
 {
 public:
-    Downloader(Url const&, Timeout const&, bool verbose);
+    Downloader(Url const&, settings::Learn const&);
     virtual ~Downloader();
 
     BufferSize read(char *buffer, BufferSize max);
@@ -25,6 +26,5 @@ private:
     boost::process::child     _child;
     boost::process::pistream& _stdout;
 };
-
 
 #endif /* __MARKOV_LEARN_DOWNLOADER_H__ */
