@@ -1,9 +1,17 @@
 #ifndef __MARKOV_COMMON_DICTIONARY_H__
 #define __MARKOV_COMMON_DICTIONARY_H__
 
-#include <boost/pool/pool.hpp>
 #include <boost/thread.hpp>
+
 #include "common/types.h"
+
+namespace boost
+{
+namespace archive
+{
+    class text_iarchive;
+} // namespace archive
+} // namespace boost
 
 class TokenDict;
 
@@ -62,6 +70,7 @@ private:
 
 public:
     TokenDict(WordDict const& dict);
+    TokenDict(boost::archive::text_iarchive&);
     Word const& operator()(Token);
 
     template<typename Archive>

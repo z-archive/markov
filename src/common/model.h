@@ -8,16 +8,26 @@
 #include "common/types.h"
 #include "common/state.h"
 
+namespace boost
+{
+namespace archive
+{
+    class text_iarchive;
+} // namespace archive
+} // namespace boost
+
+
 template<class Item>
 class Model : boost::noncopyable
 {
 private:
     typedef std::map<Item, Frequency> Tree;
-    typedef std::pair< Frequency, Tree > TreeWithStat;
+    typedef std::pair<Frequency, Tree> TreeWithStat;
     typedef std::map<State< Item >, TreeWithStat> Data;
 
 public:
     Model(ChainOrder order);
+    Model(boost::archive::text_iarchive&);
 
     void add(State<Item> const&, Item const&);
 
@@ -32,6 +42,5 @@ private:
     ChainOrder _order;
     Data _data;
 };
-
 
 #endif /* __MARKOV_COMMON_MODEL_H__ */

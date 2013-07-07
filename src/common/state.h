@@ -5,6 +5,15 @@
 #include <boost/utility.hpp>
 #include "common/types.h"
 
+namespace boost
+{
+namespace archive
+{
+    class text_iarchive;
+} // namespace archive
+} // namespace boost
+
+
 template<typename Item>
 class State
 {
@@ -12,12 +21,16 @@ private:
     typedef std::vector<Item> Data;
 
 public:
+    State();
     State(ChainOrder order);
+    State(boost::archive::text_iarchive&);
 
     void clear();
     void add(Item);
     bool complete() const;
-    bool less(State const&) const;
+    bool operator<(State const&) const;
+
+    //std::ostream& operator<<(std::ostream& out) const;
 
     template<typename Archive>
     void serialize(Archive &ar, unsigned int const version)
@@ -28,11 +41,5 @@ public:
 private:
     Data _data;
 };
-
-template<typename Item>
-inline bool operator<(State<Item> const& l, State<Item> const& r)
-{
-    return l.less(r);
-}
 
 #endif /* __MARKOV_COMMON_STATE_H__ */
