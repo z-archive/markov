@@ -5,14 +5,6 @@
 
 #include "common/types.h"
 
-namespace boost
-{
-namespace archive
-{
-    class text_iarchive;
-} // namespace archive
-} // namespace boost
-
 class TokenDict;
 
 class WordDict : boost::noncopyable
@@ -23,9 +15,6 @@ private:
     friend class TokenDict;
 
 public:
-    typedef Token item_type;
-    typedef Token item_return_type;
-
     WordDict();
     Token operator()(Word const&);
 
@@ -33,8 +22,6 @@ public:
     void serialize(Archive &ar, unsigned int const version)
     {
         TokenDict tdict(*this);
-        bool compressed = true;
-        ar & compressed;
         ar & tdict;
     }
 
@@ -47,19 +34,14 @@ private:
 class DummyWordDict : boost::noncopyable
 {
 public:
-    typedef Word        item_type;
-    typedef Word const &item_return_type;
-
     Word const& operator()(Word const &word)
     {
         return word;
     }
 
     template<typename Archive>
-    void serialize(Archive &ar, unsigned int const /*version*/)
+    void serialize(Archive &, unsigned int const)
     {
-        bool compressed = false;
-        ar & compressed;
     }
 };
 
@@ -70,7 +52,6 @@ private:
 
 public:
     TokenDict(WordDict const& dict);
-    TokenDict(boost::archive::text_iarchive&);
     Word const& operator()(Token);
 
     template<typename Archive>

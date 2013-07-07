@@ -1,8 +1,5 @@
 #include <cstring>
 #include <boost/assert.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/string.hpp>
 #include "state.h"
 
 template<typename Item>
@@ -18,19 +15,13 @@ State<Item>::State(ChainOrder order)
 }
 
 template<typename Item>
-State<Item> ::State(boost::archive::text_iarchive &ar)
-{
-    ar >> _data;
-}
-
-template<typename Item>
 void State<Item>::clear()
 {
     _data.clear();
 }
 
 template<typename Item>
-void State<Item>::add(Item item)
+void State<Item>::push(Item item)
 {
     if (_data.size() < _data.capacity())
     {
@@ -51,26 +42,6 @@ bool State<Item>::complete() const
 {
     return _data.size() == _data.capacity();
 }
-
-/*
-template<typename Item>
-std::ostream& State<Item>::operator<<(std::ostream& out) const
-{
-    out << "[";
-    bool first = true;
-    for (auto item: _data)
-    {
-        if (first)
-        {
-            out << "|";
-            first = false;
-        }
-        out << item;
-    }
-    out << "]" << std::flush;
-    return out;
-}
-*/
 
 template<typename Item>
 bool State<Item>::operator<(State<Item> const& right) const

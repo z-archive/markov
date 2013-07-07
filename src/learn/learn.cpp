@@ -1,50 +1,37 @@
 #include <iostream>
-#include <fstream>
 
-#include <boost/utility/typed_in_place_factory.hpp>
-#include <boost/algorithm/string/replace.hpp>
 #include <boost/utility.hpp>
 #include <boost/thread.hpp>
 #include <boost/archive/text_oarchive.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/vector.hpp>
 
+#include "common/file.h"
 #include "common/dictionary.h"
+#include "common/chain.h"
 #include "common/model.h"
 #include "learn/downloader.h"
 #include "learn/parser.h"
 #include "learn.h"
 
-template<typename S, typename F>
-S& resolve_stream(S& default_stream,
-                  boost::optional<F>& file,
-                  OptionalString const& path)
-{
-    if (!path) {
-        return default_stream;
-    }
-    file = boost::in_place(path.get());
-    return file.get();
-}
-
-template<typename Converter>
-class Learner : boost::noncopyable
+template<typename Model>
+class Teacher : boost::noncopyable
 {
 private:
-    typedef typename Converter::item_type item_type;
-    typedef typename Converter::item_return_type item_return_type;
-    typedef Learner<Converter> this_type;
-    typedef boost::lock_guard<boost::mutex> guard;
+    typedef typename Model::item_type            item_type;
+    typedef typename Model::item_return_type     item_return_type;
+    typedef typename Model::learn_converter_type converter_type;
+    typedef typename Model::chain_type           chain_type;
+    typedef Teacher<Model>                       this_type;
+    typedef boost::lock_guard<boost::mutex>      guard;
 
 public:
-    Learner(settings::Learn const &settings) :
+    Teacher(settings::Learn const &settings) :
         _settings(settings),
-        _model(settings.order),
+        _chain(settings.order),
         _in(nullptr)
     {
     }
 
-    void learn(std::istream& in)
+    void teach(std::istream& in)
     {
         _in = &in;
         std::vector<boost::thread> tv;
@@ -69,12 +56,13 @@ public:
         while(false);
     }
 
-    void save(std::ostream& out) const
+    void save(ArchiveOutput &archive) const
     {
         guard lock(_mutex);
-        boost::archive::text_oarchive oa(out);
-        oa & _converter;
-        oa & _model;
+        Model::save(archive,
+                    _settings,
+                    _converter,
+                    _chain);
     }
 
 private:
@@ -113,9 +101,9 @@ private:
                 if (state.complete())
                 {
                     guard lock(_mutex);
-                    _model.add(state, item);
+                    _chain.learn(state, item);
                 }
-                state.add(item);
+                state.push(item);
             }
         }
 
@@ -123,22 +111,36 @@ private:
     }
 
 private:
-    std::istream*        _in;
-    settings::Learn      _settings;
-    Converter            _converter;
-    Model<item_type>     _model;
+    std::istream*    _in;
+    settings::Learn  _settings;
+    converter_type   _converter;
+    chain_type       _chain;
     mutable boost::mutex _mutex;
 };
 
 
+template<typename Model>
+void learn(settings::Learn const &settings,
+           std::istream& in,
+           ArchiveOutput& archive)
+{
+    Teacher<Model> teacher(settings);
+    teacher.teach(in);
+    teacher.save(archive);
+}
+
 void learn(settings::Learn const &settings)
 {
-    boost::optional<std::ifstream> fin;
-    boost::optional<std::ofstream> fout;
-    std::istream& in = resolve_stream(std::cin, fin, settings.in);
-    std::ostream& out = resolve_stream(std::cout, fout, settings.out);
+    std::istream& in = getInput(settings.in);
+    std::ostream& out = getOutput(settings.out);
+    ArchiveOutput archive(out);
 
-    Learner<WordDict> learner(settings);
-    learner.learn(in);
-    learner.save(out);
+    if (settings.compress)
+    {
+        learn<TokenModel>(settings, in, archive);
+    }
+    else
+    {
+        learn<WordModel>(settings, in, archive);
+    }
 }

@@ -1,6 +1,3 @@
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/serialization/string.hpp>
 #include "dictionary.h"
 
 WordDict::WordDict() : _count(0)
@@ -32,12 +29,6 @@ TokenDict::TokenDict(WordDict const& dict) : _data(dict._count)
         _data[token] = word;
     }
 }
-
-TokenDict::TokenDict(boost::archive::text_iarchive &ar)
-{
-    ar >> _data;
-}
-
 
 Word const& TokenDict::operator()(Token token)
 {

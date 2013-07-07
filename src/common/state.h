@@ -5,15 +5,6 @@
 #include <boost/utility.hpp>
 #include "common/types.h"
 
-namespace boost
-{
-namespace archive
-{
-    class text_iarchive;
-} // namespace archive
-} // namespace boost
-
-
 template<typename Item>
 class State
 {
@@ -23,14 +14,12 @@ private:
 public:
     State();
     State(ChainOrder order);
-    State(boost::archive::text_iarchive&);
 
     void clear();
-    void add(Item);
+    void push(Item);
     bool complete() const;
-    bool operator<(State const&) const;
 
-    //std::ostream& operator<<(std::ostream& out) const;
+    bool operator<(State const&) const;
 
     template<typename Archive>
     void serialize(Archive &ar, unsigned int const version)

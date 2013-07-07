@@ -9,17 +9,18 @@ struct Common
 {
     OptionalString in;
     OptionalString out;
+    ChainOrder     order;
+    BufferSize     max_word_length;
+    bool           compress;
     bool           verbose;
 };
 
 struct Learn : public Common
 {
     Timeout    timeout;
-    ChainOrder order;
-    BufferSize max_word_length;
     BufferSize parser_buffer_length;
     uint32_t   worker_count;
-    bool       strict;
+    //bool       strict;
 };
 
 struct Generate : public Common

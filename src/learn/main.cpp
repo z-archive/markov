@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
                       << format("  max word length %1%\n") % s.max_word_length
                       << format("  worker count %1%\n") % s.worker_count
                       << format("  verbose? %1%\n") % (s.verbose ? "yes" : "no")
-                      << format("  strict? %1%\n") % (s.strict ? "yes" : "no")
+                //<< format("  strict? %1%\n") % (s.strict ? "yes" : "no")
                       << std::flush;
         }
 
