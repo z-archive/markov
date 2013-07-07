@@ -22,6 +22,13 @@ struct Learn : public Common
     bool       strict;
 };
 
+struct Generate : public Common
+{
+    ChainOrder count;
+    RandomSeed seed;
+    std::vector<std::string> begin;
+};
+
 namespace defaults
 {
 static Timeout   const timeout = 10;
@@ -30,7 +37,7 @@ static BufferSize const max_word_length = 64;
 
 namespace limits
 {
-static ChainOrder const order = 64;
+static ChainOrder const max_order = 64;
 } // namespace defauls
 } // namespace settings
 

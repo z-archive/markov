@@ -27,6 +27,8 @@ path_stage=${path_root}/stage
 # path to source code
 path_source=${path_root}/src
 
+export VERBOSE=${VERBOSE-}
+
 function exec_path ()
 {
     kind=$1

@@ -41,14 +41,14 @@ int parse(int argc,
         po::value<int>(&worker_count_var)->default_value(boost::thread::hardware_concurrency()),
         "downloader and parser thread count");
     add("chain_order,c", po::value<int>(&order_var),
-        (co_help % static_cast<int>(limits::order)).str().c_str());
-    add("strict,s",
-        "strict mode - begin of result sentense should be begin of some source sentence; same with end");
+        (co_help % static_cast<int>(limits::max_order)).str().c_str());
+/*    add("strict,s",
+      "strict mode - begin of result sentense should be begin of some source sentence; same with end");*/
     add("help,h",
         "print help message");
     add("verbose,v",
         "verbose output");
-    
+
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
@@ -78,15 +78,15 @@ int parse(int argc,
     }
 
     if ((order_var < 1) ||
-            (order_var > limits::order)) {
+        (order_var > limits::max_order)) {
         auto string = "Error: invalid --chain_order=%1%, expected value from 1 to %2%";
-        auto message = format(string) % settings.order % limits::order;
+        auto message = format(string) % settings.order % limits::max_order;
         throw std::out_of_range(message.str());
     } else {
         settings.order = order_var;
     }
 
-    settings.strict = static_cast<bool>(vm.count("strict"));
+    //settings.strict = static_cast<bool>(vm.count("strict"));
     settings.verbose = static_cast<bool>(vm.count("verbose"));
 
     return 0;

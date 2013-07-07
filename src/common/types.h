@@ -19,5 +19,6 @@ typedef std::string Word;
 typedef uint32_t    Token;
 typedef uint32_t    Frequency;
 typedef int         RandomSeed;
+typedef std::vector<Word> Sentence;
 
 #endif /* __MARKOV_COMMON_TYPES_H__ */

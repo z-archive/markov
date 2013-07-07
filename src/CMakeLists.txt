@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(Markov CXX)
 
 ADD_DEFINITIONS(
-    -std=c++11 # Or -std=c++0x
-    # Other flags
+    -std=c++11
 )
 
 # Dependencies
