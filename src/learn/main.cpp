@@ -3,6 +3,7 @@
 
 #include <boost/format.hpp>
 
+#include "common/file.h"
 #include "cli.h"
 #include "learn.h"
 
@@ -15,11 +16,16 @@ int main(int argc, char* argv[])
         settings::Learn s;
         int result = parse(argc, argv, s);
 
+        std::ifstream fin;
+        std::ofstream fout;
+        std::istream& in = getInput(fin, s.in);
+        std::ostream& out = getOutput(fout, s.out);
+
         if (result != 0) {
             return result;
         }
 
-        if (s.verbose) {
+        if (false && s.verbose) {
             std::cerr << "Options:\n"
                       << format("  input from '%1%'\n") % (s.in ? s.in.get() : "stdin")
                       << format("  timeout is %1%\n") % s.timeout
@@ -32,7 +38,7 @@ int main(int argc, char* argv[])
                       << std::flush;
         }
 
-        learn(s);
+        learn(in, out, s);
         return 0;
     }
     catch (std::exception& e) {

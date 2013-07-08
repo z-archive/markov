@@ -25,11 +25,14 @@ private:
                BufferSize length,
                BufferSize window_size);
 
+        char head() const;
         const char* data() const;
         bool done() const;
         BufferSize available() const;
 
         void skip(BufferSize count);
+
+        Downloader const& downloader() const;
 
     private:
         char* end();
@@ -49,17 +52,9 @@ public:
     Parser(Downloader& downloader,
            settings::Learn const& settings);
 
-    bool next();
-
-    // sentence delimeter
-    bool delimeter() const;
-
-    // current word (you must not call it on delimeter)
-    Word const& word() const;
+    bool next(Word&, bool& delimeter);
 
 private:
-    char head() const;
-
     typedef bool (*Predicate)(char);
 
     template<Predicate predicate>
@@ -73,6 +68,7 @@ private:
 
 private:
     Buffer _buffer;
+    bool const _verbose;
     BufferSize const _max_word_length;
 
     bool _delimeter;

@@ -1,26 +1,37 @@
 #ifndef __MARKOV_COMMON_CHAIN_H__
 #define __MARKOV_COMMON_CHAIN_H__
 
-#include <map>
 #include <utility>
+#include <map>
+//#include <boost/unordered_map.hpp>
 #include <boost/utility.hpp>
+
 
 #include "common/types.h"
 #include "common/state.h"
 
-template<class Item>
+template<typename Item>
 class Chain : boost::noncopyable
 {
 private:
-    typedef std::map<Item, Frequency> Tree;
-    typedef std::pair<Frequency, Tree> TreeWithStat;
-    typedef std::map<State< Item >, TreeWithStat> Data;
+    typedef Item                                 item_type;
+    typedef Chain<Item>                          this_type;
+    typedef State<item_type>                     input_state_type;
+    typedef typename input_state_type::data_type state_type;
+    typedef std::map<item_type, Frequency> branch_type;
+    //typedef boost::unordered_map<item_type, Frequency> branch_type;
+    typedef std::pair<Frequency, branch_type>    tree_type;
+    typedef std::map<state_type, tree_type>     data_type;
+    //typedef boost::unordered_map<state_type, tree_type>     data_type;
 
 public:
     Chain(ChainOrder order);
 
-    void learn(State<Item> const&, Item const&);
+    void learn(input_state_type const&, item_type const&);
     //void generate(State<Item> const&);
+
+    template<typename Translator>
+    void merge(this_type const&, Translator&);
 
     template<typename Archive>
     void serialize(Archive &ar, unsigned int const /*version*/)
@@ -30,7 +41,7 @@ public:
 
 private:
     ChainOrder _order;
-    Data _data;
+    data_type _data;
 };
 
 #endif /* __MARKOV_COMMON_CHAIN_H__ */

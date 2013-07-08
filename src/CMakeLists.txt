@@ -5,6 +5,12 @@ ADD_DEFINITIONS(
     -std=c++11
 )
 
+#message(STATUS "Build type (use -DCMAKE_BUILD_TYPE=[RelWithDebugInfo]/Debug/Release): ${CMAKE_BUILD_TYPE}")
+#if(NOT CMAKE_BUILD_TYPE)
+#    set(CMAKE_BUILD_TYPE RelWithDebugInfo)
+#endif(NOT CMAKE_BUILD_TYPE)
+
+
 # Dependencies
 find_package(Boost REQUIRED thread program_options system serialization)
 if(NOT Boost_FOUND)

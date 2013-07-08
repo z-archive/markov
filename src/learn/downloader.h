@@ -19,6 +19,8 @@ public:
     BufferSize read(char *buffer, BufferSize max);
     void join();
 
+    Url const& url() const;
+
 private:
     bool _verbose;
     Url const _url;

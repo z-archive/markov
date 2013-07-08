@@ -36,7 +36,7 @@ int parse(int argc,
         "file path for store model after learning; stdout if omit");
 
     // --chain_order
-    add("chain_order,o", po::value<int>(&order_var),
+    add("chain_order,c", po::value<int>(&order_var),
         (co_help % static_cast<int>(limits::max_order)).str().c_str());
 
     // --max_word_length
@@ -45,7 +45,7 @@ int parse(int argc,
         "all words which longer max_word_length would truncated");
 
     // --compress
-    add("compress,c",
+    add("compress,d",
         "compress word by dictionary or not");
 
     // --timeout

@@ -3,23 +3,23 @@
 
 #include <vector>
 #include <boost/utility.hpp>
+#include <boost/scoped_ptr.hpp>
 #include "common/types.h"
 
 template<typename Item>
-class State
+class State : boost::noncopyable
 {
-private:
-    typedef std::vector<Item> Data;
-
 public:
-    State();
+    typedef State<Item>       this_type;
+    typedef std::vector<Item> data_type;
+
     State(ChainOrder order);
 
     void clear();
-    void push(Item);
+    void push(Item const&);
     bool complete() const;
 
-    bool operator<(State const&) const;
+    bool operator<(this_type const&) const;
 
     template<typename Archive>
     void serialize(Archive &ar, unsigned int const version)
@@ -27,8 +27,11 @@ public:
         ar & _data;
     }
 
+    data_type const& data() const;
+
 private:
-    Data _data;
+    ChainOrder _count;
+    data_type _data;
 };
 
 #endif /* __MARKOV_COMMON_STATE_H__ */

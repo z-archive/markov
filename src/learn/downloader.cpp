@@ -27,7 +27,8 @@ process::child p_launch(Url const& url, Timeout const& timeout, bool verbose)
     // capture stderr
     if (verbose) {
         context.stderr_behavior = process::capture_stream();
-        std::cerr << format("starting download %1%...\n") % url << std::flush;
+        auto message = format("[%1%] downloading...\n") % url;
+        std::cerr << message.str() << std::flush;
     }
     return process::launch(std::string("/usr/bin/curl"), al, context);
 }
@@ -79,11 +80,16 @@ void Downloader::join()
         int code = s.exit_status();
         std::string stderr = p_stderr(_child);
         if (0 == code) {
-            m = format("download of '%1%': succesfully\n") % _url;
+            m = format("[%1%] downloading...done\n") % _url;
         } else {
-            m = format("download of '%1%': error, exit code is %2%, stderr is '%3%'\n")
+            m = format("[%1%] downloading...error: exit code is %2%, stderr is '%3%'\n")
                     % _url % code % stderr;
         }
         std::cerr << m << std::flush;
     }
+}
+
+Url const& Downloader::url() const
+{
+    return _url;
 }

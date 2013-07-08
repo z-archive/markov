@@ -1,6 +1,6 @@
 #include "dictionary.h"
 
-WordDict::WordDict() : _count(0)
+WordDict::WordDict() : _count()
 {
     ++_count; // Token_Begin
     ++_count; // Token_End;
@@ -8,21 +8,17 @@ WordDict::WordDict() : _count(0)
 
 Token WordDict::operator()(Word const& word)
 {
-    guard lock(_mutex);
-
     // ir - insert result
-    auto ir = _data.insert(std::make_pair(word, _count));
-    if (ir.second) {
-        return _count++;
-    } else {
-        return ir.first->second;
+    auto &result = _data[word];
+    if (result == 0)
+    {
+        result = _count++;
     }
+    return result;
 }
 
 TokenDict::TokenDict(WordDict const& dict) : _data(dict._count)
 {
-    WordDict::guard lock(dict._mutex);
-
     for(auto pair: dict._data) {
         auto word = pair.first;
         auto token = pair.second;
@@ -30,7 +26,29 @@ TokenDict::TokenDict(WordDict const& dict) : _data(dict._count)
     }
 }
 
-Word const& TokenDict::operator()(Token token)
+Word const& TokenDict::operator()(Token token) const
 {
     return _data.at(token);
+}
+
+Translator::Translator(WordDict const &from,
+                       WordDict &to) :
+    _from(from),
+    _to(to)
+{
+}
+
+Token Translator::operator()(Token const &token)
+{
+    return _to(_from(token));
+}
+
+std::vector<Token> Translator::operator()(std::vector<Token> const &state)
+{
+    std::vector<Token> result(state);
+    for(Token &token: result)
+    {
+        token = (*this)(token);
+    }
+    return result;
 }

@@ -2,10 +2,13 @@
 #include <cctype>
 
 #include <boost/assert.hpp>
+#include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include "downloader.h"
 #include "parser.h"
+
+using boost::format;
 
 Parser::Buffer::Buffer(Downloader &downloader,
                        BufferSize length,
@@ -20,24 +23,29 @@ Parser::Buffer::Buffer(Downloader &downloader,
     skip(0);
 }
 
-const char* Parser::Buffer::data() const
+inline char Parser::Buffer::head() const
 {
-    return &_data[0] + _pos;
+    return _data[_pos];
 }
 
-bool Parser::Buffer::done() const
+inline const char* Parser::Buffer::data() const
+{
+    return &_data[_pos];
+}
+
+inline bool Parser::Buffer::done() const
 {
     return available() == 0;
 }
 
-BufferSize Parser::Buffer::available() const
+inline BufferSize Parser::Buffer::available() const
 {
     return _left;
 }
 
-char* Parser::Buffer::end()
+inline char* Parser::Buffer::end()
 {
-    return &_data[0] + _pos + _left;
+    return &_data[_pos + _left];
 }
 
 bool Parser::Buffer::enoughData() const
@@ -68,20 +76,29 @@ void Parser::Buffer::skip(BufferSize count)
     }
 }
 
+Downloader const& Parser::Buffer::downloader() const
+{
+    return _downloader;
+}
+
 Parser::Parser(Downloader& downloader,
                settings::Learn const &settings) :
     _buffer(downloader,
             settings.parser_buffer_length,
             settings.max_word_length*2),
-    _max_word_length(settings.max_word_length),
-    _delimeter(true)
+    _verbose(settings.verbose),
+    _max_word_length(settings.max_word_length)
 {
+    if (_verbose)
+    {
+        std::cerr << format("[%1%] parsing...") % downloader.url() << std::endl;
+    }
 }
 
 namespace
 {
 
-bool is_delimeter(char c)
+inline bool is_delimeter(char c)
 {
     switch(c)
     {
@@ -94,47 +111,43 @@ bool is_delimeter(char c)
     }
 }
 
-bool is_word(char c)
+inline bool is_word(char c)
 {
     return isalnum(c);
 }
 
-bool for_ignore(char c)
+inline bool for_ignore(char c)
 {
     return !(is_word(c) || is_delimeter(c));
 }
 
 }
 
-char Parser::head() const
-{
-    return _buffer.data()[0];
-}
-
 template<Parser::Predicate predicate>
 BufferSize Parser::parse()
 {
     BOOST_ASSERT(_buffer.available() > 0);
-    BOOST_ASSERT(predicate(head()));
+    BOOST_ASSERT(predicate(_buffer.head()));
 
     auto data = _buffer.data();
     auto available = _buffer.available();
 
-    BufferSize current = 0;
-    do
+    BufferSize length = 0;
+    for(++length; length < available; ++length)
     {
-        ++current;
+        if (!predicate(data[length]))
+        {
+            break;
+        }
     }
-    while(current < available && predicate(data[current]));
-
-    return current;
+    return length;
 }
 
 template<Parser::Predicate predicate>
 void Parser::skip()
 {
     BOOST_ASSERT(_buffer.available() > 0);
-    BOOST_ASSERT(predicate(head()));
+    BOOST_ASSERT(predicate(_buffer.head()));
 
     do
     {
@@ -142,17 +155,17 @@ void Parser::skip()
         BOOST_ASSERT(count > 0);
         _buffer.skip(count);
     }
-    while(false == _buffer.done() && predicate(head()));
+    while(false == _buffer.done() && predicate(_buffer.head()));
 }
 
-bool Parser::next()
+bool Parser::next(Word &word, bool &delimeter)
 {
     if(_buffer.done())
     {
         return false;
     }
 
-    if (for_ignore(head()))
+    if (for_ignore(_buffer.head()))
     {
         // skip ignored data
         skip<for_ignore>();
@@ -160,51 +173,45 @@ bool Parser::next()
 
     if(_buffer.done())
     {
+        if (_verbose)
+        {
+            std::cerr << format("[%1%] parsing...done")
+                % _buffer.downloader().url() << std::endl;
+        }
         return false;
     }
 
-    if (is_word(head()))
+    if (is_word(_buffer.head()))
     {
         // parse word
         auto length = parse<is_word>();
         BOOST_ASSERT(length > 0);
 
         // save word
-        _word = std::string(_buffer.data(), length);
+        word = std::string(_buffer.data(), length);
         boost::algorithm::to_lower(_word);
 
         // skip word
         _buffer.skip(length);
 
-        if (is_word(head()))
+        if (is_word(_buffer.head()))
         {
             // too long word, truncated
             // skip tail of the word
             skip<is_word>();
         }
 
-        _delimeter = false;
+        delimeter = false;
         return true;
     }
     else
     {
-        BOOST_ASSERT(is_delimeter(head()));
+        BOOST_ASSERT(is_delimeter(_buffer.head()));
 
         // parse delimeter
         skip<is_delimeter>();
 
-        _delimeter = true;
+        delimeter = true;
         return true;
     }
-}
-
-bool Parser::delimeter() const
-{
-    return _delimeter;
-}
-
-Word const& Parser::word() const
-{
-    BOOST_ASSERT(!_delimeter);
-    return _word;
 }

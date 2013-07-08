@@ -1,7 +1,9 @@
 #ifndef __MARKOV_COMMON_DICTIONARY_H__
 #define __MARKOV_COMMON_DICTIONARY_H__
 
-#include <boost/thread.hpp>
+#include <boost/unordered_map.hpp>
+//#include <map>
+#include <boost/utility.hpp>
 
 #include "common/types.h"
 
@@ -10,9 +12,9 @@ class TokenDict;
 class WordDict : boost::noncopyable
 {
 private:
-    typedef boost::lock_guard<boost::mutex> guard;
-    typedef std::map<Word, Token> Data;
+    typedef boost::unordered_map<Word, Token> data_type;
     friend class TokenDict;
+    friend class Translator;
 
 public:
     WordDict();
@@ -26,9 +28,8 @@ public:
     }
 
 private:
-    Data  _data;
     Token _count;
-    mutable boost::mutex _mutex;
+    data_type  _data;
 };
 
 class DummyWordDict : boost::noncopyable
@@ -48,11 +49,12 @@ public:
 class TokenDict : boost::noncopyable
 {
 private:
-    typedef std::vector<Word> Data;
+    typedef std::vector<Word> data_type;
+    friend class Translator;
 
 public:
     TokenDict(WordDict const& dict);
-    Word const& operator()(Token);
+    Word const& operator()(Token) const;
 
     template<typename Archive>
     void serialize(Archive &ar, unsigned int const /*version*/)
@@ -61,7 +63,40 @@ public:
     }
 
 private:
-    Data _data;
+    data_type _data;
+};
+
+class Translator : boost::noncopyable
+{
+public:
+    Translator(WordDict const &from,
+               WordDict &to);
+
+    Token operator()(Token const&);
+    std::vector<Token> operator()(std::vector<Token> const&);
+
+private:
+    TokenDict _from;
+    WordDict  &_to;
+};
+
+class DummyTranslator : boost::noncopyable
+{
+public:
+    DummyTranslator(DummyWordDict const&,
+                    DummyWordDict&)
+    {
+    }
+
+    Word const& operator()(Word const &word)
+    {
+        return word;
+    }
+
+    std::vector<Word> const& operator()(std::vector<Word> const &state)
+    {
+        return state;
+    }
 };
 
 #endif /* __MARKOV_COMMON_DICTIONARY_H__ */

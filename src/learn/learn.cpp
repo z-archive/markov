@@ -1,10 +1,7 @@
-#include <iostream>
-
 #include <boost/utility.hpp>
 #include <boost/thread.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
-#include "common/file.h"
 #include "common/dictionary.h"
 #include "common/chain.h"
 #include "common/model.h"
@@ -17,11 +14,12 @@ class Teacher : boost::noncopyable
 {
 private:
     typedef typename Model::item_type            item_type;
-    typedef typename Model::item_return_type     item_return_type;
     typedef typename Model::learn_converter_type converter_type;
+    typedef typename Model::translator_type      translator_type;
     typedef typename Model::chain_type           chain_type;
     typedef Teacher<Model>                       this_type;
-    typedef boost::lock_guard<boost::mutex>      guard;
+    typedef State<item_type>                     state_type;
+    typedef boost::lock_guard<boost::mutex>      guard_type;
 
 public:
     Teacher(settings::Learn const &settings) :
@@ -58,7 +56,7 @@ public:
 
     void save(ArchiveOutput &archive) const
     {
-        guard lock(_mutex);
+        guard_type lock(_mutex_merge);
         Model::save(archive,
                     _settings,
                     _converter,
@@ -68,7 +66,7 @@ public:
 private:
     bool get(Url& url)
     {
-        guard lock(_mutex);
+        guard_type lock(_mutex_in);
         BOOST_ASSERT(_in);
         return std::getline(*_in, url);
     }
@@ -76,32 +74,46 @@ private:
     void work()
     {
         Url url;
-
+        chain_type chain(_settings.order);
+        converter_type converter;
         while(get(url))
         {
-            parse(url);
+            process(chain, converter, url);
+        }
+        if (_settings.verbose)
+        {
+            std::cerr << "[worker] merging chain to result..." << std::endl;
+        }
+        guard_type lock(_mutex_merge);
+        translator_type translator(_converter, converter);
+        _chain.merge(chain, translator);
+        if (_settings.verbose)
+        {
+            std::cerr << "[worker] merging chain to result...done" << std::endl;
         }
     }
 
-    void parse(Url const& url)
+    void process(chain_type& chain, converter_type& converter, Url const& url)
     {
         Downloader d(url, _settings);
         Parser p(d, _settings);
-        State<item_type> state(_settings.order);
+        state_type state(_settings.order);
+        bool delimeter;
+        Word word;
+        item_type item;
 
-        while(p.next())
+        while(p.next(word, delimeter))
         {
-            if (p.delimeter())
+            if (delimeter)
             {
                 state.clear();
             }
             else
             {
-                item_return_type item = _converter(p.word());
+                item = converter(word);
                 if (state.complete())
                 {
-                    guard lock(_mutex);
-                    _chain.learn(state, item);
+                    chain.learn(state, item);
                 }
                 state.push(item);
             }
@@ -115,7 +127,8 @@ private:
     settings::Learn  _settings;
     converter_type   _converter;
     chain_type       _chain;
-    mutable boost::mutex _mutex;
+    mutable boost::mutex _mutex_in;
+    mutable boost::mutex _mutex_merge;
 };
 
 
@@ -129,10 +142,10 @@ void learn(settings::Learn const &settings,
     teacher.save(archive);
 }
 
-void learn(settings::Learn const &settings)
+void learn(std::istream &in,
+           std::ostream &out,
+           settings::Learn const &settings)
 {
-    std::istream& in = getInput(settings.in);
-    std::ostream& out = getOutput(settings.out);
     ArchiveOutput archive(out);
 
     if (settings.compress)

@@ -3,44 +3,37 @@
 #include "state.h"
 
 template<typename Item>
-State<Item>::State()
+State<Item>::State(ChainOrder order) : _count(0), _data(order)
 {
 }
 
-
-template<typename Item>
-State<Item>::State(ChainOrder order)
-{
-    _data.reserve(order);
-}
 
 template<typename Item>
 void State<Item>::clear()
 {
-    _data.clear();
+    _count = 0;
 }
 
 template<typename Item>
-void State<Item>::push(Item item)
+void State<Item>::push(Item const &item)
 {
-    if (_data.size() < _data.capacity())
+    if (complete())
     {
-        _data.push_back(item);
+        memmove(&*(_data.begin() + 1),
+                &*_data.begin(),
+                sizeof(Item) * (_data.size() - 1));
+        _data.back() = item;
     }
     else
     {
-        Item* to   = &_data[0];
-        Item* from = to + 1;
-        auto bytes = sizeof(Item) * (_data.size() - 1);
-        memmove(to, from, bytes);
-        _data.back() = item;
+        _data[_count];
     }
 }
 
 template<typename Item>
 bool State<Item>::complete() const
 {
-    return _data.size() == _data.capacity();
+    return _count == _data.size();
 }
 
 template<typename Item>
@@ -57,6 +50,12 @@ bool State<Item>::operator<(State<Item> const& right) const
         }
     }
     return false;
+}
+
+template<typename Item>
+typename State<Item>::data_type const& State<Item>::data() const
+{
+    return _data;
 }
 
 template class State<Token>;

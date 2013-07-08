@@ -23,11 +23,11 @@ bool load_header(ArchiveInput&, settings::Common&);
 class WordModel
 {
 public:
-    typedef Word          item_type;
-    typedef Word const&   item_return_type;
-    typedef Chain<Word>   chain_type;
-    typedef DummyWordDict learn_converter_type;
-    typedef DummyWordDict generate_converter_type;
+    typedef Word            item_type;
+    typedef Chain<Word>     chain_type;
+    typedef DummyWordDict   learn_converter_type;
+    typedef DummyWordDict   generate_converter_type;
+    typedef DummyTranslator translator_type;
 
     static bool save(ArchiveOutput&,
                      settings::Common const&,
@@ -45,10 +45,10 @@ class TokenModel
 {
 public:
     typedef Token        item_type;
-    typedef Token        item_return_type;
     typedef Chain<Token> chain_type;
     typedef WordDict     learn_converter_type;
     typedef TokenDict    generate_converter_type;
+    typedef Translator   translator_type;
 
     static bool save(ArchiveOutput&,
                      settings::Common const&,
