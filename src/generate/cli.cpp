@@ -24,7 +24,7 @@ int parse(int argc,
     std::string input_var;
     std::string output_var;
     int count_var;
-    int seed_var = std::time(0);
+    int seed_var = std::time(NULL);
 
     // --input
     add("input,i",

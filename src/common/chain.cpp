@@ -38,9 +38,11 @@ bool Chain<Item>::generate(typename Chain<Item>::input_state_type &state,
     auto &tree  = tree_iterator->second;
     auto &total = tree.first;
     Frequency choise = rand() % total;
+    //std::cout << "total=" << total << " choise=" << choise << std::endl;
     Frequency current = 0;
     for (auto pair: tree.second)
     {
+        //std::cout << "current=" << current << " extra=" << pair.second << std::endl;
         current += pair.second;
         if (choise < current)
         {

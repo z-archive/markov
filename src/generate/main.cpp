@@ -1,6 +1,7 @@
 #include <exception>
 #include <sstream>
 #include <iostream>
+#include <random>
 
 #include <boost/format.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -53,6 +54,7 @@ void generate(ArchiveInput& archive,
         std::cerr << "reading model...done" << std::endl;
     }
 
+    result = settings.begin;
     state_type state(converter(settings.begin));
     ChainOrder left = settings.count;
     item_type current;
@@ -80,19 +82,15 @@ int generate(ArchiveInput &archive,
     {
         generate<WordModel>(archive, settings, sentence);
     }
-    if (sentence.size() < settings.count)
+    if (sentence.size() < settings.begin.size() + settings.count)
     {
+        auto built = sentence.size() - settings.begin.size();
         auto message = format("Built just %1% from %2%, partial result '%3%'")
-            % sentence.size() % settings.count % to_string(sentence);
+            % built % settings.count % to_string(sentence);
         std::cerr << message << std::endl;
         return 1;
     }
-    Sentence result = settings.begin;
-    for(auto word: sentence)
-    {
-        result.push_back(word);
-    }
-    out << to_string(result) << std::endl;
+    out << to_string(sentence) << std::endl;
     return 0;
 }
 
@@ -117,6 +115,11 @@ int main(int argc, char* argv[])
                       << format("  begin '%1%'\n") % to_string(s.begin)
                       << std::flush;
         }
+        if (s.verbose)
+        {
+            std::cerr << "seed=" << s.seed << std::endl;
+        }
+        std::srand(s.seed);
 
         std::ifstream fin;
         std::ofstream fout;
