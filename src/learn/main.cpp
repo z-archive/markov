@@ -16,14 +16,14 @@ int main(int argc, char* argv[])
         settings::Learn s;
         int result = parse(argc, argv, s);
 
+        if (result != 0) {
+            return result;
+        }
+
         std::ifstream fin;
         std::ofstream fout;
         std::istream& in = getInput(fin, s.in);
         std::ostream& out = getOutput(fout, s.out);
-
-        if (result != 0) {
-            return result;
-        }
 
         if (false && s.verbose) {
             std::cerr << "Options:\n"

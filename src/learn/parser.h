@@ -61,10 +61,10 @@ private:
     BufferSize parse();
 
     template<Predicate predicate>
-    void skip();
+    bool skip();
 
-    bool parseWord();
-    bool parseDelimeter();
+    bool parseWord(Word&, bool &delimeter);
+    bool parseDelimeter(bool &delimeter);
 
 private:
     Buffer _buffer;

@@ -28,7 +28,8 @@ public:
     Chain(ChainOrder order);
 
     void learn(input_state_type const&, item_type const&);
-    //void generate(State<Item> const&);
+
+    bool generate(input_state_type&, Item&) const;
 
     template<typename Translator>
     void merge(this_type const&, Translator&);
@@ -36,6 +37,30 @@ public:
     template<typename Archive>
     void serialize(Archive &ar, unsigned int const /*version*/)
     {
+      /*      for(auto pair: _data)
+        {
+          auto const &state  = pair.first;
+
+          std::cout << "state size=" << state.size();
+          for(auto i: state)
+            {
+              std::cout << " '" << i << "'";
+            }
+          std::cout << "\n";
+
+          auto &tree  = _data[state];
+          auto &stat_branch  = tree.first;
+          auto &branch  = tree.second;
+
+          std::cout << "stat branch " << stat_branch << "\n";
+
+          for (auto pair: branch)
+            {
+              auto &item   = pair.first;
+              auto &stat_item = branch[item];
+              std::cout << "item " << item << " state " << stat_item << "\n";
+            }
+            }*/
         ar & _data;
     }
 

@@ -7,6 +7,10 @@ State<Item>::State(ChainOrder order) : _count(0), _data(order)
 {
 }
 
+template<typename Item>
+State<Item>::State(data_type const &data) : _count(data.size()), _data(data)
+{
+}
 
 template<typename Item>
 void State<Item>::clear()
@@ -19,14 +23,18 @@ void State<Item>::push(Item const &item)
 {
     if (complete())
     {
-        memmove(&*(_data.begin() + 1),
+        /*memmove(&*(_data.begin() + 1),
                 &*_data.begin(),
-                sizeof(Item) * (_data.size() - 1));
-        _data.back() = item;
+                sizeof(Item) * (_data.size() - 1));*/
+        for(auto i = 1; i < _count; ++i)
+        {
+            _data[i-1] = _data[i];
+        }
+        _data[_count-1] = item;
     }
     else
     {
-        _data[_count];
+        _data[_count++] = item;
     }
 }
 

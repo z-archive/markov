@@ -1,4 +1,5 @@
 #include <iostream>
+#include <random>
 #include <boost/format.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
@@ -26,15 +27,36 @@ void Chain<Item>::learn(typename Chain<Item>::input_state_type const &state,
 }
 
 template<typename Item>
+bool Chain<Item>::generate(typename Chain<Item>::input_state_type &state,
+                           typename Chain<Item>::item_type &item) const
+{
+    auto tree_iterator = _data.find(state.data());
+    if (_data.end() == tree_iterator)
+    {
+        return false;
+    }
+    auto &tree  = tree_iterator->second;
+    auto &total = tree.first;
+    Frequency choise = rand() % total;
+    Frequency current = 0;
+    for (auto pair: tree.second)
+    {
+        current += pair.second;
+        if (choise < current)
+        {
+            item = pair.first;
+            state.push(item);
+            return true;
+        }
+    }
+    return false;
+}
+
+template<typename Item>
 template<typename Translator>
 void Chain<Item>::merge(typename Chain<Item>::this_type const &other,
                         Translator& translator)
 {
-    if (_data.empty())
-    {
-        _data = other._data;
-        return;
-    }
     for(auto const &pair: other._data)
     {
         auto const &state  = translator(pair.first);

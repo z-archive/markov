@@ -17,7 +17,6 @@ class text_oarchive;
 typedef boost::archive::text_iarchive ArchiveInput;
 typedef boost::archive::text_oarchive ArchiveOutput;
 
-bool save_header(ArchiveOutput&, settings::Common&);
 bool load_header(ArchiveInput&, settings::Common&);
 
 class WordModel

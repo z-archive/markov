@@ -113,12 +113,35 @@ inline bool is_delimeter(char c)
 
 inline bool is_word(char c)
 {
-    return isalnum(c);
+    //return isalnum(c);
+    return 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z' || '0' <= c && c <= '9';
+}
+
+inline bool is_space(char c)
+{
+    switch(c)
+    {
+    case ' ':
+    case '\t':
+    case '\r':
+    case '\n':
+        return true;
+    default:
+        return false;
+    }
 }
 
 inline bool for_ignore(char c)
 {
-    return !(is_word(c) || is_delimeter(c));
+    if (is_word(c))
+    {
+        return false;
+    }
+    if (is_delimeter(c))
+    {
+        return false;
+    }
+    return true;
 }
 
 }
@@ -126,14 +149,11 @@ inline bool for_ignore(char c)
 template<Parser::Predicate predicate>
 BufferSize Parser::parse()
 {
-    BOOST_ASSERT(_buffer.available() > 0);
-    BOOST_ASSERT(predicate(_buffer.head()));
-
     auto data = _buffer.data();
     auto available = _buffer.available();
 
     BufferSize length = 0;
-    for(++length; length < available; ++length)
+    for(; length < available; ++length)
     {
         if (!predicate(data[length]))
         {
@@ -144,74 +164,89 @@ BufferSize Parser::parse()
 }
 
 template<Parser::Predicate predicate>
-void Parser::skip()
+bool Parser::skip()
 {
-    BOOST_ASSERT(_buffer.available() > 0);
-    BOOST_ASSERT(predicate(_buffer.head()));
-
-    do
+    bool result = false;
+    while (!_buffer.done())
     {
         auto count = parse<predicate>();
-        BOOST_ASSERT(count > 0);
-        _buffer.skip(count);
+        if (count == 0)
+        {
+            break;
+        }
+        else
+        {
+            _buffer.skip(count);
+            result = true;
+        }
     }
-    while(false == _buffer.done() && predicate(_buffer.head()));
+    return result;
+}
+
+std::locale locale;
+
+bool Parser::parseWord(Word& word, bool &delimeter)
+{
+    // parse word
+    auto length = parse<is_word>();
+    if (length == 0)
+    {
+        return false;
+    }
+
+    // save word
+    word = std::string(_buffer.data(), length);
+    boost::algorithm::to_lower(_word, locale);
+
+    // skip word
+    _buffer.skip(length);
+
+    if (!_buffer.done())
+    {
+        // truncate too long word
+        skip<is_word>();
+    }
+
+    delimeter = false;
+    return true;
+}
+
+bool Parser::parseDelimeter(bool &delimeter)
+{
+    // parse delimeter
+    if (!skip<is_delimeter>())
+    {
+        return false;
+    }
+
+    delimeter = true;
+    return true;
 }
 
 bool Parser::next(Word &word, bool &delimeter)
 {
-    if(_buffer.done())
+    do
     {
-        return false;
-    }
+        skip<is_space>();
 
-    if (for_ignore(_buffer.head()))
-    {
-        // skip ignored data
+        if (parseWord(word, delimeter))
+        {
+            return true;
+        }
+
+        if (parseDelimeter(delimeter))
+        {
+            return true;
+        }
+
         skip<for_ignore>();
     }
+    while(!_buffer.done());
 
-    if(_buffer.done())
+    if (_verbose)
     {
-        if (_verbose)
-        {
-            std::cerr << format("[%1%] parsing...done")
-                % _buffer.downloader().url() << std::endl;
-        }
-        return false;
+        std::cerr << format("[%1%] parsing...done")
+            % _buffer.downloader().url() << std::endl;
     }
-
-    if (is_word(_buffer.head()))
-    {
-        // parse word
-        auto length = parse<is_word>();
-        BOOST_ASSERT(length > 0);
-
-        // save word
-        word = std::string(_buffer.data(), length);
-        boost::algorithm::to_lower(_word);
-
-        // skip word
-        _buffer.skip(length);
-
-        if (is_word(_buffer.head()))
-        {
-            // too long word, truncated
-            // skip tail of the word
-            skip<is_word>();
-        }
-
-        delimeter = false;
-        return true;
-    }
-    else
-    {
-        BOOST_ASSERT(is_delimeter(_buffer.head()));
-
-        // parse delimeter
-        skip<is_delimeter>();
-
-        delimeter = true;
-        return true;
-    }
+    return false;
 }

@@ -1,3 +1,5 @@
+#include <exception>
+#include <boost/format.hpp>
 #include "dictionary.h"
 
 WordDict::WordDict() : _count()
@@ -17,6 +19,10 @@ Token WordDict::operator()(Word const& word)
     return result;
 }
 
+TokenDict::TokenDict()
+{
+}
+
 TokenDict::TokenDict(WordDict const& dict) : _data(dict._count)
 {
     for(auto pair: dict._data) {
@@ -29,6 +35,30 @@ TokenDict::TokenDict(WordDict const& dict) : _data(dict._count)
 Word const& TokenDict::operator()(Token token) const
 {
     return _data.at(token);
+}
+
+TokenDict::state_type TokenDict::operator()(Sentence const& sentence) const
+{
+    state_type result;
+    auto n = _data.size();
+    for(auto word: sentence)
+    {
+        for(auto i = 0; i < n; ++i)
+        {
+            if (_data[i] == word)
+            {
+                result.push_back(i);
+                break;
+            }
+            if (i == n - 1)
+            {
+                auto message = boost::format("Word '%1%' is not found in model")
+                    % word;
+                throw std::runtime_error(message.str());
+            }
+        }
+    }
+    return result;
 }
 
 Translator::Translator(WordDict const &from,

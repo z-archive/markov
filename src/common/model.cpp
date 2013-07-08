@@ -4,8 +4,8 @@
 //#include <boost/unordered_map.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-#include <boost/serialization/vector.hpp>
 #include <boost/serialization/string.hpp>
+#include <boost/serialization/vector.hpp>
 #include <boost/serialization/map.hpp>
 //#include "common/unordered_map.hpp"
 #include <boost/format.hpp>
@@ -34,7 +34,6 @@ bool WordModel::save(ArchiveOutput& archive,
                      WordModel::chain_type const& chain)
 {
     save_header(archive, settings);
-    archive << converter;
     archive << chain;
 }
 
@@ -44,7 +43,6 @@ bool WordModel::load(ArchiveInput& archive,
                      WordModel::chain_type& chain)
 {
     BOOST_ASSERT(false == settings.compress);
-    archive >> converter;
     archive >> chain;
 }
 
@@ -54,7 +52,8 @@ bool TokenModel::save(ArchiveOutput& archive,
                      TokenModel::chain_type const& chain)
 {
     save_header(archive, settings);
-    archive << converter;
+    TokenDict tdict(converter);
+    archive << tdict;
     archive << chain;
 }
 

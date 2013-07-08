@@ -14,6 +14,7 @@ public:
     typedef std::vector<Item> data_type;
 
     State(ChainOrder order);
+    State(data_type const&);
 
     void clear();
     void push(Item const&);

@@ -20,13 +20,6 @@ public:
     WordDict();
     Token operator()(Word const&);
 
-    template<typename Archive>
-    void serialize(Archive &ar, unsigned int const version)
-    {
-        TokenDict tdict(*this);
-        ar & tdict;
-    }
-
 private:
     Token _count;
     data_type  _data;
@@ -40,6 +33,11 @@ public:
         return word;
     }
 
+    Sentence operator()(Sentence const& sentence) const
+    {
+        return sentence;
+    }
+
     template<typename Archive>
     void serialize(Archive &, unsigned int const)
     {
@@ -50,11 +48,15 @@ class TokenDict : boost::noncopyable
 {
 private:
     typedef std::vector<Word> data_type;
+    typedef std::vector<Token>      state_type;
     friend class Translator;
 
 public:
+    TokenDict();
     TokenDict(WordDict const& dict);
     Word const& operator()(Token) const;
+
+    state_type operator()(Sentence const&) const;
 
     template<typename Archive>
     void serialize(Archive &ar, unsigned int const /*version*/)

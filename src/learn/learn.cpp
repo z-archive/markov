@@ -76,16 +76,22 @@ private:
         Url url;
         chain_type chain(_settings.order);
         converter_type converter;
+        bool empty = true;
         while(get(url))
         {
+            empty = false;
             process(chain, converter, url);
+        }
+        if (empty)
+        {
+            return;
         }
         if (_settings.verbose)
         {
             std::cerr << "[worker] merging chain to result..." << std::endl;
         }
         guard_type lock(_mutex_merge);
-        translator_type translator(_converter, converter);
+        translator_type translator(converter, _converter);
         _chain.merge(chain, translator);
         if (_settings.verbose)
         {
