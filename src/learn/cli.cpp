@@ -45,7 +45,7 @@ int parse(int argc,
         "all words which longer max_word_length would truncated");
 
     // --compress
-    add("compress,d",
+    add("compress,z",
         "compress word by dictionary or not");
 
     // --timeout
