@@ -5,8 +5,10 @@
 #include <fstream>
 #include "types.h"
 
+// return opened file or std::cin (if path not specified)
 std::istream& getInput(std::ifstream&,
                        OptionalString const&);
+// return opened file or std::cout (if path not specified)
 std::ostream& getOutput(std::ofstream&,
                         OptionalString const&);
 

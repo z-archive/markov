@@ -23,9 +23,6 @@ void State<Item>::push(Item const &item)
 {
     if (complete())
     {
-        /*memmove(&*(_data.begin() + 1),
-                &*_data.begin(),
-                sizeof(Item) * (_data.size() - 1));*/
         for(auto i = 1; i < _count; ++i)
         {
             _data[i-1] = _data[i];

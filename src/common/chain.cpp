@@ -38,11 +38,9 @@ bool Chain<Item>::generate(typename Chain<Item>::input_state_type &state,
     auto &tree  = tree_iterator->second;
     auto &total = tree.first;
     Frequency choise = rand() % total;
-    //std::cout << "total=" << total << " choise=" << choise << std::endl;
     Frequency current = 0;
     for (auto pair: tree.second)
     {
-        //std::cout << "current=" << current << " extra=" << pair.second << std::endl;
         current += pair.second;
         if (choise < current)
         {
@@ -61,9 +59,10 @@ void Chain<Item>::merge(typename Chain<Item>::this_type const &other,
 {
     for(auto const &pair: other._data)
     {
-        auto const &state  = translator(pair.first);
+        auto const &state_other = pair.first;
+        auto state_this  = translator(state_other);
 
-        auto &tree_this  = _data[state];
+        auto &tree_this  = _data[state_this];
         auto &tree_other = pair.second;
 
         auto &stat_branch_this  = tree_this.first;
@@ -76,9 +75,10 @@ void Chain<Item>::merge(typename Chain<Item>::this_type const &other,
 
         for (auto const &pair: branch_other)
         {
-            auto &item   = pair.first;
-            auto &stat_item_this = branch_this[item];
-            auto &stat_item_other = pair.second;
+            auto const &item_other = pair.first;
+            auto item_this  = translator(item_other);
+            auto const &stat_item_other = pair.second;
+            auto &stat_item_this = branch_this[item_this];
 
             stat_item_this += stat_item_other;
         }
@@ -90,4 +90,3 @@ template class Chain<Token>;
 template class Chain<Word>;
 template void Chain<Token>::merge(Chain<Token> const&, Translator&);
 template void Chain<Word>::merge(Chain<Word> const&, DummyTranslator&);
-

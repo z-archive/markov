@@ -60,5 +60,4 @@ public:
                      chain_type&);
 };
 
-
 #endif /* __MARKOV_COMMON_MODEL_H__ */

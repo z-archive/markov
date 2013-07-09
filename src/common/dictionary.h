@@ -1,8 +1,7 @@
 #ifndef __MARKOV_COMMON_DICTIONARY_H__
 #define __MARKOV_COMMON_DICTIONARY_H__
 
-#include <boost/unordered_map.hpp>
-//#include <map>
+#include <map>
 #include <boost/utility.hpp>
 
 #include "common/types.h"
@@ -12,7 +11,7 @@ class TokenDict;
 class WordDict : boost::noncopyable
 {
 private:
-    typedef boost::unordered_map<Word, Token> data_type;
+    typedef std::map<Word, Token> data_type;
     friend class TokenDict;
     friend class Translator;
 

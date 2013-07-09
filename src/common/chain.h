@@ -3,7 +3,6 @@
 
 #include <utility>
 #include <map>
-//#include <boost/unordered_map.hpp>
 #include <boost/utility.hpp>
 
 
@@ -19,10 +18,8 @@ private:
     typedef State<item_type>                     input_state_type;
     typedef typename input_state_type::data_type state_type;
     typedef std::map<item_type, Frequency> branch_type;
-    //typedef boost::unordered_map<item_type, Frequency> branch_type;
     typedef std::pair<Frequency, branch_type>    tree_type;
     typedef std::map<state_type, tree_type>     data_type;
-    //typedef boost::unordered_map<state_type, tree_type>     data_type;
 
 public:
     Chain(ChainOrder order);
@@ -37,30 +34,6 @@ public:
     template<typename Archive>
     void serialize(Archive &ar, unsigned int const /*version*/)
     {
-      /*      for(auto pair: _data)
-        {
-          auto const &state  = pair.first;
-
-          std::cout << "state size=" << state.size();
-          for(auto i: state)
-            {
-              std::cout << " '" << i << "'";
-            }
-          std::cout << "\n";
-
-          auto &tree  = _data[state];
-          auto &stat_branch  = tree.first;
-          auto &branch  = tree.second;
-
-          std::cout << "stat branch " << stat_branch << "\n";
-
-          for (auto pair: branch)
-            {
-              auto &item   = pair.first;
-              auto &stat_item = branch[item];
-              std::cout << "item " << item << " state " << stat_item << "\n";
-            }
-            }*/
         ar & _data;
     }
 

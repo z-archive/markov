@@ -7,7 +7,7 @@ function print_usage ()
     exit_code=$1
     name=$(basename $0)
     echo "Usage:
-    $name prepare 
+    $name prepare
     $name configure <extra cmake options>
     $name make <extra make options>
     $name test

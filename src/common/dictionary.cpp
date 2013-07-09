@@ -4,8 +4,6 @@
 
 WordDict::WordDict() : _count()
 {
-    ++_count; // Token_Begin
-    ++_count; // Token_End;
 }
 
 Token WordDict::operator()(Word const& word)
