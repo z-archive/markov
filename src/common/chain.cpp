@@ -30,6 +30,12 @@ template<typename Item>
 bool Chain<Item>::generate(typename Chain<Item>::input_state_type &state,
                            typename Chain<Item>::item_type &item) const
 {
+    std::cerr << "state=[ ";
+    for(auto s: state)
+    {
+        std::cerr << s << " ";
+    }
+    std::cerr << "] item=" << item << std::endl;
     auto tree_iterator = _data.find(state.data());
     if (_data.end() == tree_iterator)
     {
