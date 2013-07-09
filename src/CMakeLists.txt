@@ -6,12 +6,14 @@ ADD_DEFINITIONS(
 )
 
 # Dependencies
-find_package(Boost REQUIRED thread program_options system serialization)
+find_package(Boost REQUIRED thread program_options system serialization filesystem)
 if(NOT Boost_FOUND)
  message(FATAL_ERROR "Could not find any version of boost")
 endif(NOT Boost_FOUND)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
+
+include_directories(${CMAKE_SOURCE_DIR}/../third-party)
 
 # Includes
 include_directories(${CMAKE_SOURCE_DIR})

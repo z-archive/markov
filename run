@@ -7,10 +7,12 @@ function print_usage ()
     exit_code=$1
     name=$(basename $0)
     echo "Usage:
+    $name prepare 
     $name configure <extra cmake options>
     $name make <extra make options>
     $name test
 
+  prepare - install required for build packages (Ubuntu 12.04)
   configure - prepare source code for build
   make - build source code
   test - run unit-tests
@@ -20,6 +22,10 @@ function print_usage ()
 
 # path to checkout
 path_root=$(readlink -f $(dirname $0))
+
+# path to third-party
+path_third_party=${path_root}/third-party
+
 
 # path to build directory
 path_stage=${path_root}/stage
@@ -48,6 +54,45 @@ function exec_path ()
 }
 
 binary_names="learn generate"
+
+# prepare platform for build
+function prepare ()
+{
+    # required for download & extract boost.process
+    sudo apt-get update
+    sudo apt-get install -y wget unzip
+
+    # re-create third-party
+    rm -rf ${path_third_party}/boost
+
+    # download & extract boost.process
+    tmp_third_party=$(mktemp -d /tmp/markov.build.XXX)
+    pushd ${tmp_third_party}
+      wget http://www.highscore.de/boost/process.zip
+      unzip -q process.zip
+      mv boost ${path_third_party}
+    popd 
+    rm -rf ${tmp_third_party}
+
+    # patch boost.process
+    pushd ${path_third_party}/boost
+    patch -p1 < ../boost.process.patch
+    popd 
+
+    # install dependencies
+    sudo apt-get install -y build-essential cmake unzip libboost-thread1.48-dev libboost-program-options1.48-dev libboost-system1.48-dev libboost-serialization1.48-dev
+
+    # required for boost.process
+    sudo apt-get install -y libboost-filesystem1.48-dev
+
+    # required for g++ 4.7 (c++11 extension)
+    sudo apt-get install -y python-software-properties
+    sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+    sudo apt-get update
+    sudo apt-get -y install gcc-4.7 g++-4.7
+    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.6
+    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.7 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.7
+}
 
 # remove links from checkout
 function remove_links ()
@@ -83,6 +128,9 @@ action=${1}
 shift
 
 case $action in
+    "prepare")
+	prepare
+	;;
     "configure")
 	# clean everything
 	clean
@@ -90,7 +138,7 @@ case $action in
 	# generate makefiles
 	mkdir ${path_stage}
 	pushd ${path_stage}
-	    cmake ${path_source} $@
+	    cmake ${path_source} -DCMAKE_CXX_COMPILER=g++-4.7 $@
 	popd
 	;;
     "make")

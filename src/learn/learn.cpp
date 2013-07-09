@@ -32,14 +32,14 @@ public:
     void teach(std::istream& in)
     {
         _in = &in;
-        std::vector<boost::thread> tv;
+        std::vector<boost::thread> tv(_settings.worker_count);
         do
         {
             boost::thread_group tg;
 
-            for(auto i = 0; i < _settings.worker_count; ++i)
+            for (auto &t: tv)
             {
-                tv.push_back(boost::thread(&this_type::work, this));
+                t = boost::thread(&this_type::work, this);
             }
             for (auto &t: tv)
             {

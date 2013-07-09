@@ -1,0 +1,12 @@
+diff -ruN a/process/operations.hpp b/process/operations.hpp
+--- a/process/operations.hpp	2013-07-09 12:19:24.000000000 +0400
++++ b/process/operations.hpp	2013-07-09 12:19:49.000000000 +0400
+@@ -42,7 +42,7 @@
+ #include <boost/process/detail/file_handle.hpp> 
+ #include <boost/process/detail/pipe.hpp> 
+ #include <boost/process/detail/stream_info.hpp> 
+-#include <boost/filesystem/path.hpp> 
++#include <boost/filesystem/operations.hpp> 
+ #include <boost/algorithm/string/predicate.hpp> 
+ #include <boost/system/system_error.hpp> 
+ #include <boost/throw_exception.hpp> 
