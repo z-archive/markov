@@ -22,17 +22,17 @@ for compress in 0 1; do
     cd tmp
     echo "a b c d e f" > one.txt
     echo "d e f g i h" > two.txt
-    echo "file:///${path_root}/test/tmp/one.txt" > urls
-    echo "file:///${path_root}/test/tmp/two.txt" >> urls
+    echo "file:///$(pwd)/one.txt" > urls
+    echo "file:///$(pwd)/two.txt" >> urls
     echo "[test][simple][$compress_name] learning model..."
     if [ $compress -eq 0 ]; then
-        ${learn} -i urls -c 3 -o model
+        ${learn} -w 1 -i urls -c 4 -o model -v
     else
-        ${learn} --compress -i urls -c 3 -o model
+        ${learn} -w 1 -i urls -c 4 -o model --compress
     fi
     echo "[test][simple][$compress_name] generating sentence..."
-    result=$(${generate} -i model -c 6 a b c)
-    if [[ "a b c d e f g i h" == $result ]]; then
+    result=$(${generate} -i model -c 3 b c d e)
+    if [[ "b c d e f g i h" == $result ]]; then
         echo "[test][simple][$compress_name] passed"
     else
         echo "[test][simple][$compress_name] failed"
