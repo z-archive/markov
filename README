@@ -1,7 +1,7 @@
 # all available command
 ./run --help
 
-# prepare platofrm for build tool (install packages, etc)
+# prepare platofrm (Ubuntu 12.04 LTS) for build tool (install packages, etc)
 ./run prepare 
 
 # generate Makefiles for out-of-source build to ./stage
