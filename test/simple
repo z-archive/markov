@@ -26,13 +26,13 @@ for compress in 0 1; do
     echo "file:///$(pwd)/two.txt" >> urls
     echo "[test][simple][$compress_name] learning model..."
     if [ $compress -eq 0 ]; then
-        ${learn} -w 1 -i urls -c 4 -o model -v
+        ${learn} -w 1 -i urls -c 3 -o model
     else
-        ${learn} -w 1 -i urls -c 4 -o model --compress
+        ${learn} -w 1 -i urls -c 3 -o model --compress
     fi
     echo "[test][simple][$compress_name] generating sentence..."
-    result=$(${generate} -i model -c 3 b c d e)
-    if [[ "b c d e f g i h" == $result ]]; then
+    result=$(${generate} -i model -c 4 b c d)
+    if [[ "b c d e f g i" == $result ]]; then
         echo "[test][simple][$compress_name] passed"
     else
         echo "[test][simple][$compress_name] failed"
