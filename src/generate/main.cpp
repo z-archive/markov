@@ -54,14 +54,17 @@ void generate(ArchiveInput& archive,
         std::cerr << "reading model...done" << std::endl;
     }
 
-    result = settings.begin;
-    state_type state(converter(settings.begin));
+    // initial chain state
+    state_type state(converter.initial(settings.begin));
+
     ChainOrder left = settings.count;
     item_type current;
+    // generate
     while(left > 0)
     {
         if (!chain.generate(state, current))
         {
+            // oops, can't generate more
             break;
         }
         result.push_back(converter(current));
@@ -73,24 +76,24 @@ int generate(ArchiveInput &archive,
              settings::Generate &settings,
              std::ostream &out)
 {
-    Sentence sentence;
+    Sentence result(settings.begin);
     if (settings.compress)
     {
-        generate<TokenModel>(archive, settings, sentence);
+        generate<TokenModel>(archive, settings, result);
     }
     else
     {
-        generate<WordModel>(archive, settings, sentence);
+        generate<WordModel>(archive, settings, result);
     }
-    if (sentence.size() < settings.begin.size() + settings.count)
+    if (result.size() < settings.begin.size() + settings.count)
     {
-        auto built = sentence.size() - settings.begin.size();
+        auto built = result.size() - settings.begin.size();
         auto message = format("Built just %1% from %2%, partial result '%3%'")
-            % built % settings.count % to_string(sentence);
+            % built % settings.count % to_string(result);
         std::cerr << message << std::endl;
         return 1;
     }
-    out << to_string(sentence) << std::endl;
+    out << to_string(result) << std::endl;
     return 0;
 }
 

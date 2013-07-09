@@ -3,7 +3,6 @@
 
 #include <boost/assert.hpp>
 #include <boost/format.hpp>
-#include <boost/algorithm/string.hpp>
 
 #include "downloader.h"
 #include "parser.h"
@@ -183,8 +182,6 @@ bool Parser::skip()
     return result;
 }
 
-std::locale locale;
-
 bool Parser::parseWord(Word& word, bool &delimeter)
 {
     // parse word
@@ -196,7 +193,8 @@ bool Parser::parseWord(Word& word, bool &delimeter)
 
     // save word
     word = std::string(_buffer.data(), length);
-    boost::algorithm::to_lower(_word, locale);
+    // to lower case
+    std::transform(word.begin(), word.end(), word.begin(), ::tolower);
 
     // skip word
     _buffer.skip(length);

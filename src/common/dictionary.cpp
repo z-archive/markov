@@ -35,7 +35,7 @@ Word const& TokenDict::operator()(Token token) const
     return _data.at(token);
 }
 
-TokenDict::state_type TokenDict::operator()(Sentence const& sentence) const
+TokenDict::state_type TokenDict::initial(Sentence const& sentence) const
 {
     state_type result;
     auto n = _data.size();

@@ -32,7 +32,7 @@ public:
         return word;
     }
 
-    Sentence operator()(Sentence const& sentence) const
+    Sentence initial(Sentence const& sentence) const
     {
         return sentence;
     }
@@ -55,7 +55,7 @@ public:
     TokenDict(WordDict const& dict);
     Word const& operator()(Token) const;
 
-    state_type operator()(Sentence const&) const;
+    state_type initial(Sentence const&) const;
 
     template<typename Archive>
     void serialize(Archive &ar, unsigned int const /*version*/)

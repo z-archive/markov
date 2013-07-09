@@ -104,12 +104,12 @@ int parse(int argc,
     }
 
     // validate BEGIN
-    for(auto const &word: settings.begin)
+    for(auto &word: settings.begin)
     {
-        /*
-          does not work yet in gcc (C++11 <algorithm>):
-            std::all_off(std::begin(word), std::end(word), isalnum)
-        */
+        // word validation
+
+        // does not work yet in gcc (C++11 <algorithm>):
+        // std::all_off(std::begin(word), std::end(word), isalnum)
         bool valid=true;
         for(auto const& c: word)
         {
@@ -119,6 +119,10 @@ int parse(int argc,
                 break;
             }
         }
+
+        // to lower
+        std::transform(word.begin(), word.end(), word.begin(), ::tolower);
+
         if (!valid)
         {
             auto message = format("word '%1%' in begin sentence contain invalid symbol; your word must be letters or numbers") % word;
