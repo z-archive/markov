@@ -26,9 +26,11 @@ path_root=$(readlink -f $(dirname $0))
 # path to third-party
 path_third_party=${path_root}/third-party
 
-
 # path to build directory
 path_stage=${path_root}/stage
+
+# path to test directory
+path_test=${path_root}/test
 
 # path to source code
 path_source=${path_root}/src
@@ -151,7 +153,9 @@ case $action in
 	create_links
 	;;
     "test")
-	echo "[TODO] TEST"
+	pushd ${path_test}
+	  ./simple
+	popd 
 	;;
     "clean")
 	clean
