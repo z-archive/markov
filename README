@@ -1,0 +1,37 @@
+# all available command
+./run --help
+
+# prepare platofrm for build tool (install packages, etc)
+./run prepare 
+
+# generate Makefiles for out-of-source build to ./stage
+./run configure
+
+# build learn and generate
+./run make [-jX]
+
+# run tests
+./run test
+
+# learn text (example) to chain length 3, save result to "model" file, verbose
+echo file://$(pwd)/terror.txt | ./learn -c 3 -o model -v
+
+# generate sentence which start from "Captain Crozier was" - add 5 words
+./generate -i model -c 5 -v Captain Crozier was
+
+# example:
+oleg@t510 1 ~/dev/markov % echo file://$(pwd)/terror.txt | ./learn -c 3 -o model -v
+[file:///home/oleg/dev/markov/terror.txt] downloading...
+[file:///home/oleg/dev/markov/terror.txt] parsing...
+[file:///home/oleg/dev/markov/terror.txt] parsing...done
+[file:///home/oleg/dev/markov/terror.txt] downloading...done
+[worker] merging chain to result...
+[worker] merging chain to result...done
+oleg@t510 1 ~/dev/markov % ./generate --input=model --count=5 Captain Crozier had -v
+seed=1373363259
+reading model header...
+reading model header...done
+reading model...
+reading model...done
+captain crozier had come ice to keep it
+oleg@t510 1 ~/dev/markov %
